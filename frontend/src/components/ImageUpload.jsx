@@ -57,34 +57,45 @@ function ImageUpload() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-      <h1 className="text-2xl font-semibold mb-6">Upload Reference Image</h1>
+    <div className="container py-5">
+  
+      {/* Title */}
+      <h1 className="text-center mb-4 fw-bold display-6 text-dark">
+        Upload Reference Image
+      </h1>
   
       {/* Upload Box */}
-      <label className="block border-2 border-dashed border-gray-400 rounded p-6 cursor-pointer bg-gray-50 hover:bg-gray-100 mb-6">
-        <input type="file" onChange={handleFile} accept="image/*" className="hidden" />
+      <label className="d-block border border-2 border-secondary border-dashed rounded p-5 bg-light text-center mb-3" style={{ cursor: 'pointer' }}>
+        <input type="file" onChange={handleFile} accept="image/*" className="d-none" />
         {preview ? (
-          <img src={preview} alt="Reference" className="mx-auto max-h-64" />
+          <img src={preview} alt="Reference" className="img-fluid rounded shadow" style={{ maxHeight: '300px' }} />
         ) : (
-          <p className="text-gray-500">Drag and drop your image here<br />or click to upload</p>
+          <p className="text-secondary fs-5">
+            Drag and drop your image here<br />or click to upload
+          </p>
         )}
       </label>
   
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {/* Error Message */}
+      {error && <p className="text-danger text-center mt-3">{error}</p>}
   
       {/* Puzzle Pieces */}
       {Object.keys(pieceUrls).length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-medium mb-3">Click a Puzzle Piece:</h2>
-          <div className="flex flex-wrap justify-center gap-4">
+        <div className="mt-5 p-4 bg-white rounded shadow">
+          <h2 className="text-center fs-4 fw-semibold mb-4">Click a Puzzle Piece</h2>
+          <div className="row row-cols-2 row-cols-md-4 g-4 justify-content-center">
             {Object.entries(pieceUrls).map(([index, url]) => (
-              <img
-                key={index}
-                src={`http://127.0.0.1:5000${url}`}
-                alt={`Piece ${index}`}
-                className="w-32 h-32 object-cover border rounded shadow cursor-pointer hover:scale-105 transition"
-                onClick={() => handlePieceClick(index)}
-              />
+              <div key={index} className="col text-center">
+                <img
+                  src={`http://127.0.0.1:5000${url}`}
+                  alt={`Piece ${index}`}
+                  className="img-thumbnail"
+                  style={{ width: '120px', height: '120px', objectFit: 'cover', cursor: 'pointer', transition: 'transform 0.2s' }}
+                  onClick={() => handlePieceClick(index)}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -92,26 +103,27 @@ function ImageUpload() {
   
       {/* Match Results */}
       {matchResult && (
-        <div className="mt-12">
-          <h2 className="text-xl font-medium mb-4">Match Results:</h2>
-          <div className="flex flex-col md:flex-row justify-center gap-6">
-            <img src={matchResult.matched} alt="Matched Keypoints" className="w-[300px] border rounded shadow" />
-            <img src={matchResult.overlaid} alt="Overlaid Result" className="w-[300px] border rounded shadow" />
+        <div className="mt-5 p-4 bg-white rounded shadow">
+          <h2 className="text-center fs-4 fw-semibold mb-4">Match Results</h2>
+          <div className="d-flex flex-column flex-md-row justify-content-center align-items-center gap-4">
+            <img src={matchResult.matched} alt="Matched Keypoints" className="img-fluid rounded border shadow" style={{ maxWidth: '300px' }} />
+            <img src={matchResult.overlaid} alt="Overlaid Result" className="img-fluid rounded border shadow" style={{ maxWidth: '300px' }} />
           </div>
         </div>
       )}
   
       {/* Reset Button */}
       {file && (
-        <button
-          onClick={resetUpload}
-          className="mt-10 bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded"
-        >
-          Reset and Upload New Image
-        </button>
+        <div className="text-center mt-4">
+          <button
+            onClick={resetUpload}
+            className="btn btn-danger px-4 py-2 shadow-sm"
+          >
+            Reset and Upload New Image
+          </button>
+        </div>
       )}
     </div>
-  );  
+  );
 }
-
 export default ImageUpload;
