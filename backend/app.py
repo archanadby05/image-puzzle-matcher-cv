@@ -10,12 +10,10 @@ RESULT_FOLDER = 'results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
-# 👇 Already add this route
 @app.route('/')
 def home():
     return 'Flask backend is running!'
 
-# 🔥 New route for matching
 @app.route('/match-piece', methods=['POST'])
 def match_piece():
     piece_index = int(request.form['piece_index'])
