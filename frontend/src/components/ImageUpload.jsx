@@ -8,16 +8,18 @@ const ImageUpload = ({ setPieceUrls, resetAll }) => {
   const handleFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-
+  
     try {
-      await axios.post('http://127.0.0.1:5000/upload', formData);
-      const res = await axios.get('http://127.0.0.1:5000/get-pieces');
+      const res = await axios.post('http://127.0.0.1:5000/get-pieces', formData);
+      console.log('Get pieces response:', res.data);  // ADD THIS
       setPieceUrls(res.data);
       setError('');
     } catch (err) {
+      console.error('Upload error:', err);
       setError('Upload failed. Please try a different image.');
     }
   };
+  
 
   const handleDrop = async (e) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ const ImageUpload = ({ setPieceUrls, resetAll }) => {
   return (
     <div className="w-full max-w-3xl mx-auto text-center mt-8">
       <h2 className="text-2xl font-bold mb-4">Upload Reference Image</h2>
+
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}

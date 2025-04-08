@@ -3,8 +3,11 @@ from flask import Flask, request, jsonify, send_from_directory
 import cv2
 import numpy as np
 import os
+from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='', static_folder='results')
+CORS(app, origins=['http://localhost:3000'])
+
 UPLOAD_FOLDER = 'uploads'
 RESULT_FOLDER = 'results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -105,11 +108,24 @@ def get_pieces():
 
     return jsonify(urls)
 
-
 # To serve result images
 @app.route('/results/<filename>')
 def get_result(filename):
     return send_from_directory(RESULT_FOLDER, filename)
+
+@app.route('/upload', methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    ref_path = os.path.join(UPLOAD_FOLDER, 'reference.jpg')
+    file.save(ref_path)
+
+    return jsonify({'message': 'Image uploaded successfully', 'path': ref_path}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
