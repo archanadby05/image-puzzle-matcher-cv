@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='results')
 UPLOAD_FOLDER = 'uploads'
 RESULT_FOLDER = 'results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -77,6 +77,34 @@ def match_piece():
 
     else:
         return jsonify({'error': 'Not enough good matches'}), 400
+    
+@app.route('/get-pieces', methods=['POST'])
+def get_pieces():
+    file = request.files['file']
+    ref_path = os.path.join(UPLOAD_FOLDER, 'reference.jpg')
+    file.save(ref_path)
+
+    reference = cv2.imread(ref_path)
+    h, w, _ = reference.shape
+    mid_h, mid_w = h // 2, w // 2
+
+    crop_coords = {
+        1: (0, mid_h, 0, mid_w),      # top-left
+        2: (0, mid_h, mid_w, w),      # top-right
+        3: (mid_h, h, 0, mid_w),      # bottom-left
+        4: (mid_h, h, mid_w, w),      # bottom-right
+    }
+
+    urls = {}
+
+    for index, (y1, y2, x1, x2) in crop_coords.items():
+        piece = reference[y1:y2, x1:x2]
+        filename = f'piece_{index}.jpg'
+        cv2.imwrite(os.path.join(RESULT_FOLDER, filename), piece)
+        urls[index] = f'/results/{filename}'
+
+    return jsonify(urls)
+
 
 # To serve result images
 @app.route('/results/<filename>')
