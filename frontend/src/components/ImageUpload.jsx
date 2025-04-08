@@ -1,75 +1,72 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import PuzzleBoard from './PuzzleBoard';
 
-const ImageUpload = () => {
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [pieceUrls, setPieceUrls] = useState(null);
-  const [dragging, setDragging] = useState(false);
+const ImageUpload = ({ setPieceUrls, resetAll }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const [error, setError] = useState('');
 
   const handleFile = async (file) => {
-    setPreviewUrl(URL.createObjectURL(file));
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       await axios.post('http://127.0.0.1:5000/upload', formData);
       const res = await axios.get('http://127.0.0.1:5000/get-pieces');
-      setPieceUrls(res.data.pieces);
+      setPieceUrls(res.data);
+      setError('');
     } catch (err) {
-      console.error('Upload or crop failed:', err);
+      setError('Upload failed. Please try a different image.');
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
-    setDragging(false);
-    if (e.dataTransfer.files.length) {
-      handleFile(e.dataTransfer.files[0]);
-    }
+    setDragActive(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragging(true);
-  };
-
-  const handleDragLeave = () => setDragging(false);
-
-  const handleChange = (e) => {
-    if (e.target.files.length) {
-      handleFile(e.target.files[0]);
-    }
+  const handleInputChange = (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-4">
+    <div className="w-full max-w-3xl mx-auto text-center mt-8">
+      <h2 className="text-2xl font-bold mb-4">Upload Reference Image</h2>
       <div
-        className={`border-4 border-dashed p-6 rounded-lg text-center transition ${
-          dragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-        }`}
         onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragOver={(e) => e.preventDefault()}
+        onDragEnter={() => setDragActive(true)}
+        onDragLeave={() => setDragActive(false)}
+        className={`p-10 border-4 border-dashed rounded-xl transition-all ${
+          dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+        }`}
       >
-        <p className="mb-2 font-medium">Drag & drop an image here</p>
-        <p>or</p>
+        <p className="mb-2 text-gray-600">Drag and drop your image here</p>
         <input
           type="file"
           accept="image/*"
-          onChange={handleChange}
-          className="mt-2"
+          onChange={handleInputChange}
+          className="hidden"
+          id="upload"
         />
+        <label
+          htmlFor="upload"
+          className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Or click to upload
+        </label>
       </div>
 
-      {previewUrl && (
-        <div className="mt-4">
-          <h3 className="font-semibold">Uploaded Reference Image</h3>
-          <img src={previewUrl} alt="" className="w-full mt-2 rounded border" />
-        </div>
-      )}
+      {error && <p className="text-red-600 mt-4">{error}</p>}
 
-      {pieceUrls && <PuzzleBoard pieceUrls={pieceUrls} />}
+      <button
+        onClick={resetAll}
+        className="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+      >
+        Reset and Upload New Image
+      </button>
     </div>
   );
 };
