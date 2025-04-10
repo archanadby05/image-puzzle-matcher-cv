@@ -103,20 +103,22 @@ function ImageUpload() {
   
       {/* Match Results */}
       {matchResult && (
-        <div className="mt-5 p-4 bg-white rounded shadow">
+        <div className="mt-5 p-4 bg-white rounded">
           <h2 className="text-center fs-4 fw-semibold mb-4">SIFT Match Result</h2>
           <div className="d-flex justify-content-center">
             <img
               src={matchResult.matched}
               alt="Matched Keypoints"
-              className="img-fluid rounded border shadow"
-              style={{ maxWidth: '500px' }}
+              className="img-fluid"
+              style={{
+                maxWidth: '600px',
+              }}
             />
           </div>
         </div>
       )}
 
-  
+
       {/* Reset Button */}
       {file && (
         <div className="text-center mt-4">
