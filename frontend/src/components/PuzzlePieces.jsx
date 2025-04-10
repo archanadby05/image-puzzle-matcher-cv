@@ -1,72 +1,79 @@
+// src/components/PuzzlePieces.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
+import MatchedResult from './MatchedResult';
 
-const PuzzlePieces = ({ pieceUrls }) => {
-  const [matchedUrl, setMatchedUrl] = useState('');
-  const [overlaidUrl, setOverlaidUrl] = useState('');
-  const [loading, setLoading] = useState(false);
+function PuzzlePieces({ pieceUrls }) {
+  const [matchResult, setMatchResult] = useState(null);
   const [error, setError] = useState('');
+  const [loadingIndex, setLoadingIndex] = useState(null);
 
   const handleClick = async (index) => {
-    setLoading(true);
     setError('');
+    setMatchResult(null);
+    setLoadingIndex(index);
+
     const formData = new FormData();
     formData.append('piece_index', index);
-    formData.append('file', new File([], 'reference.jpg')); // Dummy, backend already saved it
 
     try {
-      const res = await axios.post('http://127.0.0.1:5000/match-piece', formData);
-      setMatchedUrl(`http://127.0.0.1:5000${res.data.matched}`);
-      setOverlaidUrl(`http://127.0.0.1:5000${res.data.overlaid}`);
+      const response = await fetch('http://127.0.0.1:5000/match-piece', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Matching failed');
+
+      const data = await response.json();
+      setMatchResult({
+        matched: `http://127.0.0.1:5000${data.matched}`,
+        overlaid: `http://127.0.0.1:5000${data.overlaid}`,
+      });
     } catch (err) {
-      setError('Matching failed. Try another piece.');
+      console.error(err);
+      setError('Failed to match puzzle piece. Please try again.');
     } finally {
-      setLoading(false);
+      setLoadingIndex(null);
     }
   };
 
   return (
-    <div className="mt-8 max-w-4xl mx-auto text-center">
-      <h3 className="text-xl font-semibold mb-4">Puzzle Pieces</h3>
-
-      <div className="flex flex-wrap justify-center gap-4">
-        {Object.entries(pieceUrls).map(([index, url]) => (
-          <img
-            key={index}
-            src={`http://127.0.0.1:5000${url}`}
-            alt={`Piece ${index}`}
-            className="w-24 h-24 object-cover border rounded shadow cursor-pointer hover:scale-105 transition"
-            onClick={() => handleClick(index)}
-          />
-        ))}
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Click a Puzzle Piece to Match</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {Object.entries(pieceUrls).map(([index, url]) => (
+            <button
+              key={index}
+              onClick={() => handleClick(index)}
+              className="relative group"
+              disabled={loadingIndex !== null}
+            >
+              <img
+                src={`http://127.0.0.1:5000${url}`}
+                alt={`Piece ${index}`}
+                className={`rounded shadow-lg border-2 border-transparent group-hover:border-blue-400 transition-transform duration-200 transform hover:scale-105 ${
+                  loadingIndex === parseInt(index) ? 'opacity-50' : ''
+                }`}
+              />
+              {loadingIndex === parseInt(index) && (
+                <span className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded">
+                  <span className="text-sm text-gray-700 font-medium">Matching...</span>
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {loading && <p className="mt-4 text-blue-600">Matching piece...</p>}
-      {error && <p className="mt-4 text-red-600">{error}</p>}
+      {error && (
+        <p className="text-red-500 font-medium text-center">{error}</p>
+      )}
 
-      {(matchedUrl || overlaidUrl) && (
-        <div className="mt-10">
-          <h3 className="text-xl font-semibold mb-4">Match Results</h3>
-          <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
-            {matchedUrl && (
-              <img
-                src={matchedUrl}
-                alt="Matched"
-                className="w-64 border rounded shadow"
-              />
-            )}
-            {overlaidUrl && (
-              <img
-                src={overlaidUrl}
-                alt="Overlaid"
-                className="w-64 border rounded shadow"
-              />
-            )}
-          </div>
-        </div>
+      {matchResult && (
+        <MatchedResult matched={matchResult.matched} overlaid={matchResult.overlaid} />
       )}
     </div>
   );
-};
+}
 
 export default PuzzlePieces;
