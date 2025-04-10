@@ -1,26 +1,22 @@
-// src/components/MatchedResult.jsx
 import React from 'react';
-import { motion } from 'framer-motion';
 
-function MatchedResult({ matched, overlaid }) {
+function MatchedResult({ matchedImages }) {
+  if (matchedImages.length === 0) return null;
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-medium">Matched Result</h2>
-      <motion.img
-        key={overlaid}
-        src={overlaid}
-        alt="Overlaid Result"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="rounded shadow-lg max-w-full"
-      />
-      <h3 className="text-md font-semibold text-gray-600">Keypoint Matches:</h3>
-      <img
-        src={matched}
-        alt="Feature Matches"
-        className="rounded border shadow-sm max-w-full"
-      />
+    <div className="bg-white p-4 rounded shadow-md">
+      <h2 className="text-lg font-semibold mb-4 text-center">Match Results</h2>
+      <div className="flex flex-wrap justify-center gap-4">
+        {matchedImages.map((match, idx) => (
+          <div key={idx} className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+            <img
+              src={`data:image/png;base64,${match.matchImage}`}
+              alt={`Matched piece ${match.pieceIndex}`}
+              className="w-full rounded shadow"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

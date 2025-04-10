@@ -1,15 +1,16 @@
-// src/components/PuzzlePieces.jsx
 import React, { useState } from 'react';
 import MatchedResult from './MatchedResult';
 
 function PuzzlePieces({ pieceUrls }) {
-  const [matchResult, setMatchResult] = useState(null);
+  const [matchedResults, setMatchedResults] = useState([]);
   const [error, setError] = useState('');
   const [loadingIndex, setLoadingIndex] = useState(null);
 
   const handleClick = async (index) => {
     setError('');
-    setMatchResult(null);
+
+    if (matchedResults.find(r => r.pieceIndex === parseInt(index))) return;
+
     setLoadingIndex(index);
 
     const formData = new FormData();
@@ -24,10 +25,15 @@ function PuzzlePieces({ pieceUrls }) {
       if (!response.ok) throw new Error('Matching failed');
 
       const data = await response.json();
-      setMatchResult({
-        matched: `http://127.0.0.1:5000${data.matched}`,
-        overlaid: `http://127.0.0.1:5000${data.overlaid}`,
-      });
+
+      setMatchedResults(prev => [
+        ...prev,
+        {
+          pieceIndex: parseInt(index),
+          matchImage: data.matched_base64,
+          placedImage: data.overlaid_base64,
+        },
+      ]);
     } catch (err) {
       console.error(err);
       setError('Failed to match puzzle piece. Please try again.');
@@ -69,9 +75,8 @@ function PuzzlePieces({ pieceUrls }) {
         <p className="text-red-500 font-medium text-center">{error}</p>
       )}
 
-      {matchResult && (
-        <MatchedResult matched={matchResult.matched} overlaid={matchResult.overlaid} />
-      )}
+      {/* Show only the left-side match */}
+      <MatchedResult matchedImages={matchedResults} />
     </div>
   );
 }
