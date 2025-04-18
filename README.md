@@ -105,9 +105,3 @@ image-puzzle-matcher/
 - Drag-and-drop puzzle placement manually
 - Animated matching overlays
 - Support more than 4-piece puzzles
-
----
-
-## License
-This project is for educational and experimental purposes.
-
